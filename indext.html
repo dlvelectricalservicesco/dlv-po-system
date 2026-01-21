@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLV Electrical Services Co. - PO System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-900);
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 48px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 440px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Main App */
+        .main-app {
+            display: none;
+        }
+
+        .main-app.active {
+            display: block;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #b91c1c;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.total {
+            border-color: var(--primary);
+        }
+
+        .stat-card.ongoing {
+            border-color: #3b82f6;
+        }
+
+        .stat-card.pending {
+            border-color: var(--warning);
+        }
+
+        .stat-card.completed {
+            border-color: var(--success);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .stat-amount {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: white;
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--gray-400);
+            background: var(--gray-50);
+        }
+
+        /* PO List */
+        .po-list-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            padding: 10px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            min-width: 200px;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .filter-select {
+            padding: 10px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+        }
+
+        .po-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .po-table thead {
+            background: var(--gray-50);
+        }
+
+        .po-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .po-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        .po-table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.draft {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .status-badge.ongoing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-view {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-edit {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #b45309;
+        }
+
+        .btn-print {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #047857;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+
+        /* PO Form */
+        .po-form-section {
+            display: none;
+        }
+
+        .po-form-section.active {
+            display: block;
+        }
+
+        .form-card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--gray-900);
+        }
+
+        .form-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .items-section {
+            margin-top: 32px;
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .items-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .btn-add-item {
+            padding: 10px 20px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-add-item:hover {
+            background: #047857;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .items-table th {
+            background: var(--gray-100);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid var(--gray-300);
+        }
+
+        .items-table td {
+            padding: 8px;
+            border: 1px solid var(--gray-300);
+        }
+
+        .items-table input,
+        .items-table textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .items-table textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn-remove-item {
+            padding: 6px 12px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .totals-section {
+            margin-top: 24px;
+            padding: 24px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 16px;
+        }
+
+        .total-row.grand {
+            border-top: 2px solid var(--gray-900);
+            padding-top: 16px;
+            margin-top: 8px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .total-label {
+            margin-right: 24px;
+            font-weight: 600;
+            min-width: 150px;
+            text-align: right;
+        }
+
+        .total-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            min-width: 200px;
+            text-align: right;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+
+        .btn-cancel {
+            padding: 12px 24px;
+            background: var(--gray-200);
+            color: var(--gray-700);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: var(--gray-300);
+        }
+
+        /* Print View */
+        .print-view {
+            display: none;
+        }
+
+        .print-view.active {
+            display: block;
+        }
+
+        .print-container {
+            background: white;
+            padding: 48px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--gray-900);
+        }
+
+        .print-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .print-header p {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .print-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .print-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .print-info-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .print-info-section p {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .print-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 32px;
+        }
+
+        .print-items-table th {
+            background: var(--gray-900);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            border: 1px solid var(--gray-900);
+        }
+
+        .print-items-table td {
+            padding: 12px;
+            border: 1px solid var(--gray-300);
+            font-size: 14px;
+        }
+
+        .print-items-table .text-right {
+            text-align: right;
+        }
+
+        .print-totals {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid var(--gray-300);
+        }
+
+        .print-total-row {
+            display: flex;
+            justify-content: flex-end;
+            padding: 8px 0;
+            font-size: 16px;
+        }
+
+        .print-total-row.grand {
+            border-top: 3px solid var(--gray-900);
+            padding-top: 16px;
+            margin-top: 12px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .print-signature {
+            margin-top: 48px;
+            padding-top: 24px;
+        }
+
+        .print-signature p {
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+
+        .signature-line {
+            border-top: 2px solid var(--gray-900);
+            width: 300px;
+            padding-top: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .print-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            justify-content: center;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header,
+            .print-actions,
+            .action-buttons {
+                display: none !important;
+            }
+            .print-container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-500);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-500);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>DLV Electrical Services Co.</h1>
+                <p>Purchase Order Management System</p>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" onkeypress="if(event.key==='Enter') handleLogin(event)">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" onkeypress="if(event.key==='Enter') handleLogin(event)">
+                </div>
+                <button type="button" class="btn" onclick="handleLogin(event)">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="main-app">
+        <div class="app-container">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>DLV Electrical Services Co.</h1>
+                    <p>Purchase Order Management System</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <span id="userName">Admin</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="dashboard active">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card total">
+                        <div class="stat-label">Total Purchase Orders</div>
+                        <div class="stat-value" id="totalPOs">0</div>
+                    </div>
+                    <div class="stat-card ongoing">
+                        <div class="stat-label">Ongoing</div>
+                        <div class="stat-value" id="ongoingCount">0</div>
+                        <div class="stat-amount" id="ongoingAmount">₱ 0.00</div>
+                    </div>
+                    <div class="stat-card pending">
+                        <div class="stat-label">Pending</div>
+                        <div class="stat-value" id="pendingCount">0</div>
+                        <div class="stat-amount" id="pendingAmount">₱ 0.00</div>
+                    </div>
+                    <div class="stat-card completed">
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-value" id="completedCount">0</div>
+                        <div class="stat-amount" id="completedAmount">₱ 0.00</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="showPOForm()">+ Create New PO</button>
+                    <button class="btn-secondary" onclick="showPOList()">View All POs</button>
+                </div>
+
+                <!-- PO List Section -->
+                <div class="po-list-section">
+                    <div class="section-header">
+                        <h2>Recent Purchase Orders</h2>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters">
+                        <input type="text" class="filter-input" id="searchInput" placeholder="Search by PO number or client...">
+                        <select class="filter-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <input type="date" class="filter-input" id="dateFromFilter" placeholder="From Date">
+                        <input type="date" class="filter-input" id="dateToFilter" placeholder="To Date">
+                    </div>
+
+                    <!-- PO Table -->
+                    <div id="poTableContainer">
+                        <table class="po-table">
+                            <thead>
+                                <tr>
+                                    <th>PO Number</th>
+                                    <th>Date</th>
+                                    <th>Client</th>
+                                    <th>Attention To</th>
+                                    <th>Status</th>
+                                    <th>Grand Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="poTableBody">
+                                <tr>
+                                    <td colspan="7" class="empty-state">
+                                        <h3>No purchase orders yet</h3>
+                                        <p>Click "Create New PO" to get started</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PO Form View -->
+            <div id="poFormView" class="po-form-section">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2 id="formTitle">Create New Purchase Order</h2>
+                        <button class="btn-cancel" onclick="cancelPOForm()">← Back</button>
+                    </div>
+
+                    <form id="poForm">
+                        <!-- Header Information -->
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="poNumber">PO Number *</label>
+                                <input type="text" id="poNumber" required placeholder="e.g., 2025-0001">
+                            </div>
+                            <div class="form-field">
+                                <label for="poDate">Date *</label>
+                                <input type="date" id="poDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="clientName">Client Name *</label>
+                                <input type="text" id="clientName" required placeholder="e.g., METROVOLTS" list="clientsList">
+                                <datalist id="clientsList"></datalist>
+                            </div>
+                            <div class="form-field">
+                                <label for="attentionTo">Attention To *</label>
+                                <input type="text" id="attentionTo" required placeholder="e.g., Mr. Jessel Cruda">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="clientAddress">Client Address (Optional)</label>
+                                <textarea id="clientAddress" rows="2" placeholder="Complete address"></textarea>
+                            </div>
+                            <div class="form-field">
+                                <label for="approvedBy">Approved By</label>
+                                <input type="text" id="approvedBy" placeholder="e.g., Dante Leonardo Verano">
+                            </div>
+                        </div>
+
+                        <!-- VAT Toggle -->
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Enable VAT</label>
+                                <div class="toggle-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="vatEnabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span id="vatLabel">VAT Disabled</span>
+                                </div>
+                            </div>
+                            <div class="form-field" id="vatRateField" style="display: none;">
+                                <label for="vatRate">VAT Rate (%)</label>
+                                <input type="number" id="vatRate" value="12" min="0" max="100" step="0.01">
+                            </div>
+                        </div>
+
+                        <!-- Items Section -->
+                        <div class="items-section">
+                            <div class="items-header">
+                                <h3>Items</h3>
+                                <button type="button" class="btn-add-item" onclick="addItemRow()">+ Add Item</button>
+                            </div>
+
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">Item No.</th>
+                                        <th style="width: 35%;">Description</th>
+                                        <th style="width: 10%;">Qty</th>
+                                        <th style="width: 10%;">Unit</th>
+                                        <th style="width: 15%;">Unit Price</th>
+                                        <th style="width: 15%;">Total Price</th>
+                                        <th style="width: 80px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTableBody">
+                                    <!-- Items will be added here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="totals-section">
+                            <div class="total-row">
+                                <span class="total-label">Subtotal:</span>
+                                <span class="total-value" id="subtotalAmount">₱ 0.00</span>
+                            </div>
+                            <div class="total-row" id="vatRow" style="display: none;">
+                                <span class="total-label">VAT (<span id="vatPercentDisplay">12</span>%):</span>
+                                <span class="total-value" id="vatAmount">₱ 0.00</span>
+                            </div>
+                            <div class="total-row grand">
+                                <span class="total-label">GRAND TOTAL:</span>
+                                <span class="total-value" id="grandTotalAmount">₱ 0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" onclick="cancelPOForm()">Cancel</button>
+                            <button type="button" class="btn-secondary" onclick="savePODraft()">Save as Draft</button>
+                            <button type="submit" class="btn-primary">Save & Finalize</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Print/View PO -->
+            <div id="printView" class="print-view">
+                <div class="print-container">
+                    <div class="print-header">
+                        <h1>DLV ELECTRICAL SERVICES CO.</h1>
+                        <p>Electrical Contractor & Supplier</p>
+                    </div>
+
+                    <div class="print-title">PURCHASE ORDER</div>
+
+                    <div class="print-info">
+                        <div class="print-info-section">
+                            <h3>To:</h3>
+                            <p><strong id="printClientName"></strong></p>
+                            <p id="printClientAddress"></p>
+                            <p>Attention: <span id="printAttentionTo"></span></p>
+                        </div>
+                        <div class="print-info-section" style="text-align: right;">
+                            <h3>Details:</h3>
+                            <p>Date: <strong id="printDate"></strong></p>
+                            <p>PO No.: <strong id="printPONumber"></strong></p>
+                        </div>
+                    </div>
+
+                    <table class="print-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ITEM NO.</th>
+                                <th>DESCRIPTION</th>
+                                <th style="width: 80px;">QTY</th>
+                                <th style="width: 80px;">UNIT</th>
+                                <th style="width: 120px;" class="text-right">UNIT PRICE</th>
+                                <th style="width: 140px;" class="text-right">TOTAL PRICE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printItemsBody">
+                        </tbody>
+                    </table>
+
+                    <div class="print-totals">
+                        <div class="print-total-row">
+                            <span style="flex: 1; text-align: right; font-weight: 600; margin-right: 24px;">Subtotal:</span>
+                            <span style="min-width: 160px; text-align: right; font-family: 'JetBrains Mono', monospace;" id="printSubtotal"></span>
+                        </div>
+                        <div class="print-total-row" id="printVATRow" style="display: none;">
+                            <span style="flex: 1; text-align: right; font-weight: 600; margin-right: 24px;">VAT (<span id="printVATPercent"></span>%):</span>
+                            <span style="min-width: 160px; text-align: right; font-family: 'JetBrains Mono', monospace;" id="printVAT"></span>
+                        </div>
+                        <div class="print-total-row grand">
+                            <span style="flex: 1; text-align: right; margin-right: 24px;">GRAND TOTAL:</span>
+                            <span style="min-width: 160px; text-align: right; font-family: 'JetBrains Mono', monospace;" id="printGrandTotal"></span>
+                        </div>
+                    </div>
+
+                    <div class="print-signature">
+                        <p>Approved By: <span id="printApprovedBy"></span></p>
+                        <div class="signature-line">Signature</div>
+                    </div>
+
+                    <div class="print-actions">
+                        <button class="btn-cancel" onclick="closePrintView()">← Back</button>
+                        <button class="btn-primary" onclick="window.print()">🖨️ Print</button>
+                        <button class="btn-secondary" onclick="downloadPDF()">📥 Download PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaYwgbXLSZ0OU-xRwn6vNXMORdmeNWyXE",
+            authDomain: "potracker-65058.firebaseapp.com",
+            projectId: "potracker-65058",
+            storageBucket: "potracker-65058.firebasestorage.app",
+            messagingSenderId: "640378852354",
+            appId: "1:640378852354:web:7eb2f4110ed205a31e031b",
+            measurementId: "G-BV1NBR28S2"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global State
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.query = query;
+        window.orderBy = orderBy;
+
+        let currentUser = null;
+        let purchaseOrders = [];
+        let editingPOId = null;
+        let clients = new Set();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            checkAuth();
+            initializeEventListeners();
+        });
+
+        function initializeEventListeners() {
+            // PO Form
+            const poForm = document.getElementById('poForm');
+            if (poForm) {
+                poForm.addEventListener('submit', handlePOSubmit);
+            }
+            
+            const vatEnabled = document.getElementById('vatEnabled');
+            if (vatEnabled) {
+                vatEnabled.addEventListener('change', handleVATToggle);
+            }
+            
+            const vatRate = document.getElementById('vatRate');
+            if (vatRate) {
+                vatRate.addEventListener('input', calculateTotals);
+            }
+
+            // Filters
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterPOs);
+            }
+            
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterPOs);
+            }
+            
+            const dateFromFilter = document.getElementById('dateFromFilter');
+            if (dateFromFilter) {
+                dateFromFilter.addEventListener('change', filterPOs);
+            }
+            
+            const dateToFilter = document.getElementById('dateToFilter');
+            if (dateToFilter) {
+                dateToFilter.addEventListener('change', filterPOs);
+            }
+        }
+
+        // Authentication
+        window.handleLogin = async function(e) {
+            if (e) e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (username && password) {
+                currentUser = {
+                    username: username,
+                    fullName: username.charAt(0).toUpperCase() + username.slice(1)
+                };
+                localStorage.setItem('dlv_po_user', JSON.stringify(currentUser));
+                await showMainApp();
+            } else {
+                alert('Please enter both username and password');
+            }
+        }
+
+        function checkAuth() {
+            try {
+                const user = localStorage.getItem('dlv_po_user');
+                if (user) {
+                    currentUser = JSON.parse(user);
+                    showMainApp();
+                }
+            } catch (e) {
+                console.error('Error checking auth:', e);
+            }
+        }
+
+        async function showMainApp() {
+            showLoading(true);
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').classList.add('active');
+            document.getElementById('userName').textContent = currentUser.fullName;
+            document.getElementById('userAvatar').textContent = currentUser.fullName.charAt(0).toUpperCase();
+            
+            await loadPOsFromFirebase();
+            updateDashboard();
+            renderPOTable();
+            showLoading(false);
+        }
+
+        window.logout = function() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentUser = null;
+                localStorage.removeItem('dlv_po_user');
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('mainApp').classList.remove('active');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // Loading Spinner
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        // Firebase Operations
+        async function loadPOsFromFirebase() {
+            try {
+                showLoading(true);
+                const q = query(collection(db, 'purchase_orders'), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                purchaseOrders = [];
+                clients = new Set();
+                
+                querySnapshot.forEach((doc) => {
+                    const po = { id: doc.id, ...doc.data() };
+                    purchaseOrders.push(po);
+                    clients.add(po.clientName);
+                });
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading POs:', error);
+                alert('Error loading purchase orders. Please refresh the page.');
+                showLoading(false);
+            }
+        }
+
+        async function savePOToFirebase(poData) {
+            try {
+                showLoading(true);
+                if (editingPOId) {
+                    // Update existing PO
+                    const poRef = doc(db, 'purchase_orders', editingPOId);
+                    await updateDoc(poRef, poData);
+                } else {
+                    // Create new PO
+                    await addDoc(collection(db, 'purchase_orders'), poData);
+                }
+                await loadPOsFromFirebase();
+                showLoading(false);
+                return true;
+            } catch (error) {
+                console.error('Error saving PO:', error);
+                alert('Error saving purchase order. Please try again.');
+                showLoading(false);
+                return false;
+            }
+        }
+
+        async function deletePOFromFirebase(poId) {
+            try {
+                showLoading(true);
+                await deleteDoc(doc(db, 'purchase_orders', poId));
+                await loadPOsFromFirebase();
+                showLoading(false);
+                return true;
+            } catch (error) {
+                console.error('Error deleting PO:', error);
+                alert('Error deleting purchase order. Please try again.');
+                showLoading(false);
+                return false;
+            }
+        }
+
+        // Dashboard
+        function updateDashboard() {
+            const stats = {
+                total: purchaseOrders.length,
+                ongoing: { count: 0, amount: 0 },
+                pending: { count: 0, amount: 0 },
+                completed: { count: 0, amount: 0 }
+            };
+
+            purchaseOrders.forEach(po => {
+                if (po.status === 'ongoing') {
+                    stats.ongoing.count++;
+                    stats.ongoing.amount += po.grandTotal;
+                } else if (po.status === 'pending') {
+                    stats.pending.count++;
+                    stats.pending.amount += po.grandTotal;
+                } else if (po.status === 'completed') {
+                    stats.completed.count++;
+                    stats.completed.amount += po.grandTotal;
+                }
+            });
+
+            document.getElementById('totalPOs').textContent = stats.total;
+            document.getElementById('ongoingCount').textContent = stats.ongoing.count;
+            document.getElementById('ongoingAmount').textContent = formatCurrency(stats.ongoing.amount);
+            document.getElementById('pendingCount').textContent = stats.pending.count;
+            document.getElementById('pendingAmount').textContent = formatCurrency(stats.pending.amount);
+            document.getElementById('completedCount').textContent = stats.completed.count;
+            document.getElementById('completedAmount').textContent = formatCurrency(stats.completed.amount);
+        }
+
+        // PO Form
+        window.showPOForm = function(poId = null) {
+            editingPOId = poId;
+            document.getElementById('dashboardView').classList.remove('active');
+            document.getElementById('poFormView').classList.add('active');
+            document.getElementById('printView').classList.remove('active');
+
+            if (poId) {
+                loadPOForEdit(poId);
+                document.getElementById('formTitle').textContent = 'Edit Purchase Order';
+            } else {
+                document.getElementById('poForm').reset();
+                document.getElementById('formTitle').textContent = 'Create New Purchase Order';
+                
+                const poDateField = document.getElementById('poDate');
+                if (poDateField) {
+                    poDateField.valueAsDate = new Date();
+                }
+                
+                document.getElementById('itemsTableBody').innerHTML = '';
+                addItemRow();
+                addItemRow();
+                suggestNextPONumber();
+            }
+
+            updateClientsList();
+        }
+
+        function loadPOForEdit(poId) {
+            const po = purchaseOrders.find(p => p.id === poId);
+            if (!po) return;
+
+            document.getElementById('poNumber').value = po.poNumber;
+            document.getElementById('poDate').value = po.poDate;
+            document.getElementById('clientName').value = po.clientName;
+            document.getElementById('attentionTo').value = po.attentionTo;
+            document.getElementById('clientAddress').value = po.clientAddress || '';
+            document.getElementById('approvedBy').value = po.approvedBy || '';
+            document.getElementById('vatEnabled').checked = po.vatEnabled;
+            document.getElementById('vatRate').value = po.vatRate;
+
+            handleVATToggle();
+
+            document.getElementById('itemsTableBody').innerHTML = '';
+            po.items.forEach(item => {
+                addItemRow(item);
+            });
+
+            calculateTotals();
+        }
+
+        function suggestNextPONumber() {
+            const year = new Date().getFullYear();
+            const yearPOs = purchaseOrders.filter(po => po.poNumber.startsWith(year.toString()));
+            const nextNum = yearPOs.length + 1;
+            const poNumber = `${year}-${String(nextNum).padStart(4, '0')}`;
+            document.getElementById('poNumber').value = poNumber;
+        }
+
+        function updateClientsList() {
+            const datalist = document.getElementById('clientsList');
+            datalist.innerHTML = '';
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client;
+                datalist.appendChild(option);
+            });
+        }
+
+        window.cancelPOForm = function() {
+            if (confirm('Are you sure? Any unsaved changes will be lost.')) {
+                showDashboard();
+            }
+        }
+
+        window.showDashboard = function() {
+            document.getElementById('dashboardView').classList.add('active');
+            document.getElementById('poFormView').classList.remove('active');
+            document.getElementById('printView').classList.remove('active');
+            editingPOId = null;
+        }
+
+        window.showPOList = function() {
+            document.getElementById('dashboardView').classList.add('active');
+            document.getElementById('poFormView').classList.remove('active');
+            document.getElementById('printView').classList.remove('active');
+        }
+
+        // Items Management
+        window.addItemRow = function(item = null) {
+            const tbody = document.getElementById('itemsTableBody');
+            const itemNo = tbody.children.length + 1;
+            const row = tbody.insertRow();
+            
+            row.innerHTML = `
+                <td><input type="text" value="${itemNo}" readonly style="background: #f3f4f6; text-align: center;"></td>
+                <td><textarea class="item-description" placeholder="Enter item description">${item ? item.description : ''}</textarea></td>
+                <td><input type="number" class="item-qty" value="${item ? item.qty : ''}" min="0" step="0.01" placeholder="0" oninput="calculateTotals()"></td>
+                <td><input type="text" class="item-unit" value="${item ? item.unit : ''}" placeholder="SET"></td>
+                <td><input type="number" class="item-price" value="${item ? item.unitPrice : ''}" min="0" step="0.01" placeholder="0.00" oninput="calculateTotals()"></td>
+                <td><input type="text" class="item-total" readonly style="background: #f3f4f6; text-align: right;"></td>
+                <td><button type="button" class="btn-remove-item" onclick="removeItemRow(this)">Remove</button></td>
+            `;
+
+            calculateTotals();
+        }
+
+        window.removeItemRow = function(btn) {
+            if (document.getElementById('itemsTableBody').children.length <= 1) {
+                alert('At least one item is required');
+                return;
+            }
+            btn.closest('tr').remove();
+            renumberItems();
+            calculateTotals();
+        }
+
+        function renumberItems() {
+            const rows = document.getElementById('itemsTableBody').children;
+            Array.from(rows).forEach((row, index) => {
+                row.cells[0].querySelector('input').value = index + 1;
+            });
+        }
+
+        function handleVATToggle() {
+            const enabled = document.getElementById('vatEnabled').checked;
+            document.getElementById('vatRateField').style.display = enabled ? 'block' : 'none';
+            document.getElementById('vatRow').style.display = enabled ? 'flex' : 'none';
+            document.getElementById('vatLabel').textContent = enabled ? 'VAT Enabled' : 'VAT Disabled';
+            calculateTotals();
+        }
+
+        window.calculateTotals = function() {
+            const rows = document.getElementById('itemsTableBody').children;
+            let subtotal = 0;
+
+            Array.from(rows).forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const total = qty * price;
+                row.querySelector('.item-total').value = formatCurrency(total);
+                subtotal += total;
+            });
+
+            const vatEnabled = document.getElementById('vatEnabled').checked;
+            const vatRate = parseFloat(document.getElementById('vatRate').value) || 0;
+            const vatAmount = vatEnabled ? (subtotal * vatRate / 100) : 0;
+            const grandTotal = subtotal + vatAmount;
+
+            document.getElementById('subtotalAmount').textContent = formatCurrency(subtotal);
+            document.getElementById('vatAmount').textContent = formatCurrency(vatAmount);
+            document.getElementById('grandTotalAmount').textContent = formatCurrency(grandTotal);
+            document.getElementById('vatPercentDisplay').textContent = vatRate;
+        }
+
+        // Save PO
+        async function handlePOSubmit(e) {
+            e.preventDefault();
+            await savePO('ongoing');
+        }
+
+        window.savePODraft = async function() {
+            await savePO('draft');
+        }
+
+        async function savePO(status) {
+            const items = [];
+            const rows = document.getElementById('itemsTableBody').children;
+
+            Array.from(rows).forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                
+                if (qty > 0 || price > 0) {
+                    items.push({
+                        itemNo: row.cells[0].querySelector('input').value,
+                        description: row.querySelector('.item-description').value,
+                        qty: qty,
+                        unit: row.querySelector('.item-unit').value,
+                        unitPrice: price,
+                        totalPrice: qty * price
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                alert('Please add at least one item');
+                return;
+            }
+
+            const vatEnabled = document.getElementById('vatEnabled').checked;
+            const vatRate = parseFloat(document.getElementById('vatRate').value) || 0;
+            const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+            const vatAmount = vatEnabled ? (subtotal * vatRate / 100) : 0;
+            const grandTotal = subtotal + vatAmount;
+
+            const po = {
+                poNumber: document.getElementById('poNumber').value,
+                poDate: document.getElementById('poDate').value,
+                clientName: document.getElementById('clientName').value,
+                clientAddress: document.getElementById('clientAddress').value,
+                attentionTo: document.getElementById('attentionTo').value,
+                approvedBy: document.getElementById('approvedBy').value,
+                status: status,
+                vatEnabled: vatEnabled,
+                vatRate: vatRate,
+                items: items,
+                subtotal: subtotal,
+                vatAmount: vatAmount,
+                grandTotal: grandTotal,
+                createdAt: editingPOId ? purchaseOrders.find(p => p.id === editingPOId).createdAt : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            const saved = await savePOToFirebase(po);
+            
+            if (saved) {
+                updateDashboard();
+                renderPOTable();
+                alert(`Purchase Order ${status === 'draft' ? 'saved as draft' : 'created'} successfully!`);
+                showDashboard();
+            }
+        }
+
+        // PO List
+        function renderPOTable() {
+            const tbody = document.getElementById('poTableBody');
+            const filtered = getFilteredPOs();
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-results">
+                            <h3>No purchase orders found</h3>
+                            <p>Try adjusting your filters or create a new PO</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(po => `
+                <tr>
+                    <td><strong>${po.poNumber}</strong></td>
+                    <td>${formatDate(po.poDate)}</td>
+                    <td>${po.clientName}</td>
+                    <td>${po.attentionTo}</td>
+                    <td><span class="status-badge ${po.status}">${po.status.toUpperCase()}</span></td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${formatCurrency(po.grandTotal)}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-sm btn-view" onclick="viewPO('${po.id}')" title="View">👁️</button>
+                            ${po.status !== 'completed' ? `<button class="btn-sm btn-edit" onclick="showPOForm('${po.id}')" title="Edit">✏️</button>` : ''}
+                            <button class="btn-sm btn-print" onclick="viewPO('${po.id}')" title="Print">🖨️</button>
+                            <select class="btn-sm" onchange="changeStatus('${po.id}', this.value)" style="padding: 6px;">
+                                <option value="">Status</option>
+                                <option value="draft" ${po.status === 'draft' ? 'selected' : ''}>Draft</option>
+                                <option value="ongoing" ${po.status === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                                <option value="pending" ${po.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="completed" ${po.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            </select>
+                            ${po.status === 'draft' ? `<button class="btn-sm btn-delete" onclick="deletePO('${po.id}')" title="Delete">🗑️</button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterPOs() {
+            renderPOTable();
+        }
+
+        function getFilteredPOs() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFromFilter').value;
+            const dateTo = document.getElementById('dateToFilter').value;
+
+            return purchaseOrders.filter(po => {
+                const matchSearch = !search || 
+                    po.poNumber.toLowerCase().includes(search) ||
+                    po.clientName.toLowerCase().includes(search) ||
+                    po.attentionTo.toLowerCase().includes(search);
+                
+                const matchStatus = !status || po.status === status;
+                
+                const matchDateFrom = !dateFrom || po.poDate >= dateFrom;
+                const matchDateTo = !dateTo || po.poDate <= dateTo;
+
+                return matchSearch && matchStatus && matchDateFrom && matchDateTo;
+            });
+        }
+
+        window.changeStatus = async function(poId, newStatus) {
+            if (!newStatus) return;
+            
+            const po = purchaseOrders.find(p => p.id === poId);
+            if (po) {
+                po.status = newStatus;
+                po.updatedAt = new Date().toISOString();
+                
+                const poRef = doc(db, 'purchase_orders', poId);
+                await updateDoc(poRef, { status: newStatus, updatedAt: po.updatedAt });
+                
+                await loadPOsFromFirebase();
+                updateDashboard();
+                renderPOTable();
+            }
+        }
+
+        window.deletePO = async function(poId) {
+            if (confirm('Are you sure you want to delete this PO? This action cannot be undone.')) {
+                const deleted = await deletePOFromFirebase(poId);
+                if (deleted) {
+                    updateDashboard();
+                    renderPOTable();
+                }
+            }
+        }
+
+        // View/Print PO
+        window.viewPO = function(poId) {
+            const po = purchaseOrders.find(p => p.id === poId);
+            if (!po) return;
+
+            document.getElementById('printClientName').textContent = po.clientName;
+            document.getElementById('printClientAddress').textContent = po.clientAddress || '';
+            document.getElementById('printAttentionTo').textContent = po.attentionTo;
+            document.getElementById('printDate').textContent = formatDate(po.poDate);
+            document.getElementById('printPONumber').textContent = po.poNumber;
+            document.getElementById('printApprovedBy').textContent = po.approvedBy || '';
+
+            const itemsBody = document.getElementById('printItemsBody');
+            itemsBody.innerHTML = po.items.map(item => `
+                <tr>
+                    <td style="text-align: center;">${item.itemNo}</td>
+                    <td>${item.description}</td>
+                    <td style="text-align: center;">${item.qty}</td>
+                    <td style="text-align: center;">${item.unit}</td>
+                    <td class="text-right">${formatCurrency(item.unitPrice)}</td>
+                    <td class="text-right"><strong>${formatCurrency(item.totalPrice)}</strong></td>
+                </tr>
+            `).join('');
+
+            document.getElementById('printSubtotal').textContent = formatCurrency(po.subtotal);
+            
+            if (po.vatEnabled) {
+                document.getElementById('printVATRow').style.display = 'flex';
+                document.getElementById('printVATPercent').textContent = po.vatRate;
+                document.getElementById('printVAT').textContent = formatCurrency(po.vatAmount);
+            } else {
+                document.getElementById('printVATRow').style.display = 'none';
+            }
+
+            document.getElementById('printGrandTotal').textContent = formatCurrency(po.grandTotal);
+
+            document.getElementById('dashboardView').classList.remove('active');
+            document.getElementById('poFormView').classList.remove('active');
+            document.getElementById('printView').classList.add('active');
+        }
+
+        window.closePrintView = function() {
+            showDashboard();
+        }
+
+        window.downloadPDF = function() {
+            alert('PDF download feature will use browser print to PDF.\n\nSteps:\n1. Click Print button\n2. Select "Save as PDF" as destination\n3. Click Save');
+            window.print();
+        }
+
+        // Utility Functions
+        function formatCurrency(amount) {
+            return '₱ ' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+    </script>
+</body>
+</html>
